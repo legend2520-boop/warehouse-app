@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>倉儲管理系統｜專業版</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0b1220">
+
+  <style>
+    :root{
+      --bg0:#070b14;
+      --bg1:#0b1220;
+      --panel:#0f1b33;
+      --card:#0f1f3f;
+      --card2:#0b1733;
+      --text:#e8eefc;
+      --muted:#9fb0d0;
+      --line:rgba(255,255,255,.11);
+      --line2:rgba(255,255,255,.07);
+      --brand:#4f8cff;
+      --brand2:#2f67ff;
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+      --radius:18px;
+      --radius2:14px;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family:"Microsoft JhengHei","Segoe UI",system-ui,-apple-system,sans-serif;
+      background:
+        radial-gradient(1100px 700px at 20% 10%, rgba(79,140,255,.22), transparent 60%),
+        radial-gradient(900px 600px at 85% 35%, rgba(34,197,94,.14), transparent 55%),
+        radial-gradient(900px 700px at 55% 95%, rgba(245,158,11,.12), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      color:var(--text);
+    }
+
+    /* Topbar */
+    .topbar{
+      position:sticky; top:0; z-index:60;
+      backdrop-filter: blur(14px);
+      background: linear-gradient(180deg, rgba(7,11,20,.92), rgba(7,11,20,.62));
+      border-bottom:1px solid var(--line);
+    }
+    .topbar-inner{
+      max-width:1280px; margin:0 auto;
+      padding:14px 16px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      flex-wrap:wrap;
+    }
+    .brand{display:flex; align-items:center; gap:12px;}
+    .logo{
+      width:42px; height:42px; border-radius:14px;
+      background: linear-gradient(135deg, rgba(79,140,255,1), rgba(47,103,255,.55));
+      box-shadow: 0 14px 30px rgba(79,140,255,.28);
+      display:grid; place-items:center;
+      font-weight:900; letter-spacing:.5px;
+    }
+    .brand h1{margin:0;font-size:16px;letter-spacing:.2px;}
+    .brand .sub{margin-top:3px;font-size:12px;color:var(--muted);}
+
+    .kpis{display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:flex-end;}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:7px 10px; border-radius:999px;
+      background: rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      color: var(--text);
+      font-size:12px; font-weight:900;
+      white-space:nowrap;
+    }
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 3px rgba(79,140,255,.18)}
+    .dot.ok{background:var(--ok);box-shadow:0 0 0 3px rgba(34,197,94,.18)}
+    .dot.warn{background:var(--warn);box-shadow:0 0 0 3px rgba(245,158,11,.18)}
+
+    /* Layout */
+    .wrap{
+      max-width:1280px;
+      margin:16px auto 40px;
+      padding:0 16px;
+      display:grid;
+      grid-template-columns: 380px 1fr;
+      gap:16px;
+      align-items:start;
+    }
+    @media (max-width: 1020px){
+      .wrap{grid-template-columns:1fr;}
+      .kpis{justify-content:flex-start;}
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(15,31,63,.92), rgba(11,23,51,.92));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card-hd{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;}
+    .card-hd h2{margin:0;font-size:13px;letter-spacing:.35px;font-weight:900;}
+    .card-bd{padding:14px 16px 16px;}
+
+    /* Inputs */
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;}
+    input,select,textarea{
+      width:100%;
+      padding:10px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(7,12,22,.55);
+      color: var(--text);
+      outline:none;
+      font-size:13px;
+    }
+    input::placeholder, textarea::placeholder{color: rgba(159,176,208,.65);}
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(79,140,255,.75);
+      box-shadow: 0 0 0 4px rgba(79,140,255,.18);
+    }
+    textarea{min-height:90px; resize:vertical;}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+
+    /* Buttons */
+    .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+    button{border:0;padding:10px 12px;border-radius: 12px;font-size:13px;font-weight:900;cursor:pointer;letter-spacing:.2px;}
+    .btn-primary{background: linear-gradient(135deg, var(--brand), var(--brand2)); color:#fff; box-shadow: 0 14px 30px rgba(79,140,255,.18);}
+    .btn-primary:hover{filter:brightness(1.06)}
+    .btn-ghost{background: rgba(255,255,255,.08); color: var(--text); border:1px solid rgba(255,255,255,.10)}
+    .btn-ghost:hover{background: rgba(255,255,255,.12)}
+    .btn-danger{background: rgba(239,68,68,.16); color: #fecaca; border:1px solid rgba(239,68,68,.30)}
+    .btn-danger:hover{background: rgba(239,68,68,.22)}
+    .btn-mini{padding:7px 9px;border-radius: 10px;font-size:12px;font-weight:900;}
+    .btn-mini.blue{background: rgba(79,140,255,.14); border:1px solid rgba(79,140,255,.32); color:#bfdbfe;}
+    .btn-mini.gray{background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.10); color:var(--text);}
+    .btn-mini.red{background: rgba(239,68,68,.14); border:1px solid rgba(239,68,68,.30); color:#fecaca;}
+
+    /* Badges */
+    .badge{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background: rgba(255,255,255,.06);font-size:12px;font-weight:900;white-space:nowrap;}
+    .badge.ok{border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.10); color: #bbf7d0;}
+    .badge.warn{border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.10); color: #fde68a;}
+    .badge.info{border-color: rgba(79,140,255,.35); background: rgba(79,140,255,.10); color: #bfdbfe;}
+
+    /* Toolbar / Tabs */
+    .tabs{display:flex; gap:8px; flex-wrap:wrap;}
+    .tab{
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
+      user-select:none;
+    }
+    .tab.active{background: rgba(79,140,255,.18); border-color: rgba(79,140,255,.35); color:#bfdbfe;}
+
+    /* Table */
+    .tblwrap{margin-top:12px;border:1px solid var(--line);border-radius:14px;overflow:auto;max-height: 680px;background: rgba(7,12,22,.30);}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    th,td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top;}
+    th{position:sticky;top:0;z-index:1;background: rgba(7,12,22,.78);backdrop-filter: blur(10px);color: rgba(159,176,208,.95);font-weight:900;font-size:12px;letter-spacing:.25px;text-align:left;}
+    tr:hover td{background: rgba(255,255,255,.03)}
+
+    /* Messages */
+    .msg{margin-top:10px;padding:10px 12px;border-radius: 12px;border: 1px solid rgba(255,255,255,.10);background: rgba(255,255,255,.06);color: var(--text);font-size:12px;line-height:1.45;display:none;}
+    .msg.show{display:block;}
+    .msg.ok{border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.10);}
+    .msg.err{border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10);}
+
+    /* Modal */
+    .modal-backdrop{position:fixed; inset:0;background: rgba(0,0,0,.58);display:none;align-items:center;justify-content:center;padding:16px;z-index:100;}
+    .modal-backdrop.show{display:flex;}
+    .modal{
+      width:min(860px, 100%);
+      background: linear-gradient(180deg, rgba(15,31,63,.98), rgba(11,23,51,.98));
+      border:1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .modal-hd{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    .modal-hd h3{margin:0;font-size:13px;letter-spacing:.35px;font-weight:900;}
+    .modal-bd{padding:14px 16px 16px;}
+    .grid{display:grid;gap:10px;}
+    .row2{grid-template-columns:1fr 1fr;}
+    .row3{grid-template-columns:1fr 1fr 1fr;}
+    .row4{grid-template-columns:1fr 1fr 1fr 1fr;}
+    @media (max-width: 640px){.row2,.row3,.row4{grid-template-columns:1fr;}}
+
+    .split{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .split .grow{flex:1; min-width:220px;}
+
+    .hint{margin-top:6px;font-size:12px;color: rgba(159,176,208,.85);line-height:1.45;}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="logo">WH</div>
+        <div>
+          <h1>倉儲管理系統｜專業版</h1>
+          <div class="sub">流水紀錄（不合併）＋ 儲位盤點（可對帳）｜MOVE：來源＋目的（同一筆）</div>
+        </div>
+      </div>
+      <div class="kpis">
+        <span class="pill"><span class="dot"></span>總筆數 <span id="kpiTotal">0</span></span>
+        <span class="pill"><span class="dot ok"></span>入庫 <span id="kpiIn">0</span></span>
+        <span class="pill"><span class="dot warn"></span>出庫 <span id="kpiOut">0</span></span>
+        <span class="pill"><span class="dot"></span>儲位數 <span id="kpiLoc">0</span></span>
+        <span class="pill" title="資料儲存在你的瀏覽器（LocalStorage）"><span class="dot"></span>本機資料</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- Left: Control -->
+    <div class="card">
+      <div class="card-hd">
+        <h2>控制台</h2>
+        <span class="badge info">不合併（record_id）</span>
+      </div>
+      <div class="card-bd">
+        <button class="btn-primary" id="btnOpenAdd" style="width:100%;">新增一筆</button>
+
+        <div style="margin-top:12px;" class="split">
+          <div class="grow">
+            <label>快速搜尋</label>
+            <input id="q" placeholder="SL066 / 品名 / A1" />
+          </div>
+        </div>
+
+        <div style="margin-top:10px;" class="tabs">
+          <div class="tab active" id="tabFlow">流水清單</div>
+          <div class="tab" id="tabInv">儲位盤點</div>
+        </div>
+
+        <div id="panelFlow" style="margin-top:10px;">
+          <div class="grid row2">
+            <div>
+              <label>類型</label>
+              <select id="qType">
+                <option value="">全部</option>
+                <option value="IN">入庫</option>
+                <option value="OUT">出庫</option>
+                <option value="MOVE">移位</option>
+                <option value="ADJ">調整</option>
+              </select>
+            </div>
+            <div>
+              <label>排序</label>
+              <select id="qSort">
+                <option value="dt_desc">日期新→舊</option>
+                <option value="dt_asc">日期舊→新</option>
+                <option value="ticket_asc">單號 A→Z</option>
+                <option value="product_asc">品名 A→Z</option>
+              </select>
+            </div>
+          </div>
+          <div class="hint">提示：流水用來查「某一票做過什麼」。盤點用來查「A1 有哪些貨」。</div>
+        </div>
+
+        <div id="panelInv" style="margin-top:10px; display:none;">
+          <label>只看指定儲位（可空）</label>
+          <input id="invLoc" placeholder="例如：A1" />
+          <div class="grid row2" style="margin-top:10px;">
+            <div>
+              <label>顯示方式</label>
+              <select id="invMode">
+                <option value="nz">只顯示有庫存</option>
+                <option value="all">顯示全部（含 0 / 負數）</option>
+              </select>
+            </div>
+            <div>
+              <label>彙總單位</label>
+              <select id="invUnit">
+                <option value="both">板 + 箱</option>
+                <option value="boards">只看板數</option>
+                <option value="boxes">只看箱數</option>
+              </select>
+            </div>
+          </div>
+          <div class="hint">盤點計算規則：IN 加、OUT 減、MOVE 來源扣/目的加、ADJ 依正負數調整。</div>
+        </div>
+
+        <div class="btns">
+          <button class="btn-ghost" id="btnExport">匯出（JSON）</button>
+          <button class="btn-ghost" id="btnImport">匯入（JSON）</button>
+          <button class="btn-danger" id="btnWipe">清除全部</button>
+        </div>
+
+        <div class="msg" id="msg"></div>
+      </div>
+    </div>
+
+    <!-- Right: View -->
+    <div class="card">
+      <div class="card-hd">
+        <h2 id="viewTitle">流水清單</h2>
+        <span class="badge info" id="viewHint">清單顯示品名；MOVE 以 來源→目的 顯示</span>
+      </div>
+      <div class="card-bd">
+        <div id="viewFlow">
+          <div class="tblwrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:160px;">日期</th>
+                  <th style="width:110px;">類型</th>
+                  <th style="width:200px;">編號</th>
+                  <th>品名</th>
+                  <th style="width:160px;">儲位</th>
+                  <th style="width:90px;">板</th>
+                  <th style="width:110px;">箱</th>
+                  <th style="width:220px;">備註</th>
+                  <th style="width:180px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="viewInv" style="display:none;">
+          <div class="hint" style="margin-top:2px;">建議盤點方式：以儲位為單位展開核對；不需要的儲位保持收合，畫面更乾淨。</div>
+          <div id="invContainer" style="margin-top:12px;"></div>
+          <div class="hint" style="margin-top:10px;">提示：點儲位列可展開/收合。每個品名可「展開」查看構成盤點結果的原始紀錄。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add/Edit -->
+  <div class="modal-backdrop" id="modal">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-hd">
+        <h3 id="modalTitle">新增一筆</h3>
+        <div class="split">
+          <button class="btn-mini gray" id="btnClose">關閉</button>
+          <button class="btn-mini blue" id="btnSave">儲存</button>
+        </div>
+      </div>
+      <div class="modal-bd">
+        <div class="grid row2">
+          <div>
+            <label>日期</label>
+            <input id="mDT" type="date" />
+          </div>
+          <div>
+            <label>類型</label>
+            <select id="mType">
+              <option value="IN">入庫</option>
+              <option value="OUT">出庫</option>
+              <option value="MOVE">移位</option>
+              <option value="ADJ">調整</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <label>完整編號</label>
+          <input id="mTicket" class="mono" placeholder="例如：SL066-251212" />
+        </div>
+
+        <div style="margin-top:10px;">
+          <label>品名</label>
+          <input id="mProduct" placeholder="例如：麥芽湖精 / 草本原料" />
+        </div>
+
+        <!-- Non-move fields -->
+        <div id="blockNormal" class="grid row3" style="margin-top:10px;">
+          <div>
+            <label>儲位</label>
+            <select id="mLoc">
+              <option value="">（未指定）</option>
+              <optgroup label="A 區" id="ogA"></optgroup>
+              <optgroup label="B 區" id="ogB"></optgroup>
+            </select>
+          </div>
+          <div>
+            <label>板數</label>
+            <input id="mBoards" type="number" min="0" step="1" placeholder="例如：6" />
+          </div>
+          <div>
+            <label>箱數（可空）</label>
+            <input id="mBoxes" type="number" min="0" step="1" placeholder="例如：54" />
+          </div>
+        </div>
+
+        <!-- Move fields -->
+        <div id="blockMove" class="grid row3" style="margin-top:10px; display:none;">
+          <div>
+            <label>來源儲位</label>
+            <select id="mFrom">
+              <option value="">（未指定）</option>
+              <optgroup label="A 區" id="ogA2"></optgroup>
+              <optgroup label="B 區" id="ogB2"></optgroup>
+            </select>
+          </div>
+          <div>
+            <label>目的儲位</label>
+            <select id="mTo">
+              <option value="">（未指定）</option>
+              <optgroup label="A 區" id="ogA3"></optgroup>
+              <optgroup label="B 區" id="ogB3"></optgroup>
+            </select>
+          </div>
+          <div>
+            <label>板數</label>
+            <input id="mBoardsM" type="number" min="0" step="1" placeholder="例如：6" />
+            <div class="hint">MOVE 以板數為主；箱數若需要可後續加欄位。</div>
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <label>備註</label>
+          <input id="mNote" placeholder="例如：SO代號 / 急單" />
+        </div>
+
+        <div class="hint" style="margin-top:10px;">控管原則：原始紀錄永不合併；盤點只在報表層彙總計算。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Drilldown -->
+  <div class="modal-backdrop" id="drill">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-hd">
+        <h3 id="drillTitle">修改清單</h3>
+        <div class="split">
+          <button class="btn-mini gray" id="btnDrillClose">關閉</button>
+        </div>
+      </div>
+      <div class="modal-bd">
+        <div class="tblwrap" style="max-height:520px;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:160px;">日期</th>
+                <th style="width:200px;">編號</th>
+                <th>品名</th>
+                <th style="width:110px;">類型</th>
+                <th style="width:200px;">儲位</th>
+                <th style="width:90px;">板</th>
+                <th style="width:110px;">箱</th>
+                <th style="width:220px;">備註</th>
+                <th style="width:120px;">更改</th>
+              </tr>
+            </thead>
+            <tbody id="drillBody"></tbody>
+          </table>
+        </div>
+        <div class="hint" style="margin-top:10px;">這裡直接列出此儲位＋品名的所有原始紀錄。按【更改】即可修改板數 / 箱數 / 儲位（MOVE 可改來源/目的）。若只有 1 筆紀錄，系統會直接跳到編輯視窗，省一次點擊。</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* =========================
+   Warehouse Pro — Nick Edition
+   - Professional UI
+   - Two views: Flow + Inventory by Location
+   - MOVE = from/to in one record
+   - Import supports: array OR {items:[...]} legacy
+   - Storage: LocalStorage
+
+   Fixes in this revision:
+   - Fixed SyntaxError: nowLocalDT() had stray template text from datetime-local
+   - Fixed SyntaxError: sanitizeImportedRow() missing closing brace
+   - Date-only model: dt stored as YYYY-MM-DD (input type=date)
+   - Added tests: date normalization strips time
+========================= */
+
+const STORE_KEY = "nick_warehouse_pro_v1";
+
+function $(id){ return document.getElementById(id); }
+
+function safeBind(id, evt, handler, opts){
+  const el = $(id);
+  if(!el){
+    console.warn(`[bind] element #${id} not found; skipped`);
+    return false;
+  }
+  el.addEventListener(evt, handler, opts);
+  return true;
+}
+
+function uuid(){
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random()*16|0, v = c==='x'? r : (r&0x3|0x8);
+    return v.toString(16);
+  });
+}
+
+function nowLocalDT(){
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+
+function normalize(s){ return (s ?? "").toString().trim(); }
+
+function normalizeDateOnly(s){
+  // Accept: YYYY-MM-DD, YYYY/MM/DD, ISO datetime "YYYY-MM-DDTHH:mm:ssZ"...
+  const t = normalize(s);
+  if(!t) return '';
+  const head = t.includes('T') ? t.split('T')[0] : t;
+  const h = head.replaceAll('/','-');
+  // If contains extra, keep first 10 chars when it looks like yyyy-mm-dd
+  if(h.length >= 10 && /^\d{4}-\d{2}-\d{2}/.test(h)) return h.slice(0,10);
+  return h;
+}
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(!raw) return [];
+    const data = JSON.parse(raw);
+    return Array.isArray(data) ? data : [];
+  }catch(e){ return []; }
+}
+
+function save(records){ localStorage.setItem(STORE_KEY, JSON.stringify(records)); }
+
+function showMsg(text, kind="ok"){
+  const el = $("msg");
+  if(!el) return;
+  el.textContent = text;
+  el.className = "msg show " + (kind === "err" ? "err" : "ok");
+  setTimeout(()=>{ el.className = "msg"; }, 3200);
+}
+
+function escapeHtml(str){
+  return (str ?? "").toString()
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function typeLabel(t){ return ({IN:"入庫", OUT:"出庫", MOVE:"移位", ADJ:"調整"})[t] || t; }
+function typeBadgeClass(t){ if(t==="IN") return "badge ok"; if(t==="OUT") return "badge warn"; return "badge info"; }
+
+function validateFullTicket(ticket){
+  const t = normalize(ticket).toUpperCase();
+  if(!t) return false;
+  if(!t.includes("-")) return false;
+  const parts = t.split("-");
+  if(parts.length !== 2) return false;
+  if(parts[0].length < 3) return false;
+  if(parts[1].length < 6) return false;
+  return true;
+}
+
+function fillLocOptgroups(...optgroupPairs){
+  // pairs: [ogAId, ogBId]
+  for(const [ogAId, ogBId] of optgroupPairs){
+    const ogA = $(ogAId);
+    const ogB = $(ogBId);
+    if(!ogA || !ogB) continue;
+    ogA.innerHTML = "";
+    ogB.innerHTML = "";
+    for(let i=1;i<=27;i++){
+      const op = document.createElement('option');
+      op.value = `A${i}`;
+      op.textContent = `A${i}`;
+      ogA.appendChild(op);
+    }
+    for(let i=1;i<=26;i++){
+      const op = document.createElement('option');
+      op.value = `B${i}`;
+      op.textContent = `B${i}`;
+      ogB.appendChild(op);
+    }
+  }
+}
+
+// View state
+let view = "flow"; // flow | inv
+let modalMode = "add"; // add | edit
+let editingId = null;
+let lastComputedInventory = null; // for drilldown
+
+function switchView(next){
+  view = next;
+  $("tabFlow").classList.toggle('active', next==='flow');
+  $("tabInv").classList.toggle('active', next==='inv');
+
+  $("panelFlow").style.display = next==='flow' ? 'block' : 'none';
+  $("panelInv").style.display = next==='inv' ? 'block' : 'none';
+
+  $("viewFlow").style.display = next==='flow' ? 'block' : 'none';
+  $("viewInv").style.display = next==='inv' ? 'block' : 'none';
+
+  $("viewTitle").textContent = next==='flow' ? '流水清單' : '儲位盤點';
+  $("viewHint").textContent = next==='flow'
+    ? '清單顯示品名；MOVE 以 來源→目的 顯示'
+    : '以儲位彙總；可展開明細追溯原始紀錄';
+
+  render();
+}
+
+function openAdd(){
+  modalMode = "add";
+  editingId = null;
+  $("modalTitle").textContent = "新增一筆";
+  $("mDT").value = nowLocalDT();
+  $("mType").value = "IN";
+  $("mTicket").value = "";
+  $("mProduct").value = "";
+  $("mLoc").value = "";
+  $("mBoards").value = "";
+  $("mBoxes").value = "";
+  $("mFrom").value = "";
+  $("mTo").value = "";
+  $("mBoardsM").value = "";
+  $("mNote").value = "";
+  toggleMoveUI();
+  $("modal").classList.add('show');
+  $("mTicket").focus();
+}
+
+function openEdit(id){
+  const records = load();
+  const r = records.find(x=>x.record_id===id);
+  if(!r) return;
+  modalMode = "edit";
+  editingId = id;
+  $("modalTitle").textContent = "編輯單筆";
+
+  $("mDT").value = normalizeDateOnly(r.dt) || nowLocalDT();
+  $("mType").value = r.type || "IN";
+  $("mTicket").value = r.ticket || "";
+  $("mProduct").value = r.product || "";
+  $("mNote").value = r.note || "";
+
+  // normal
+  $("mLoc").value = r.loc || "";
+  $("mBoards").value = (r.boards ?? "");
+  $("mBoxes").value = (r.boxes ?? "");
+
+  // move
+  $("mFrom").value = r.from_loc || "";
+  $("mTo").value = r.to_loc || "";
+  $("mBoardsM").value = (r.boards ?? "");
+
+  toggleMoveUI();
+  $("modal").classList.add('show');
+}
+
+function closeModal(){
+  $("modal").classList.remove('show');
+  modalMode = "add";
+  editingId = null;
+}
+
+function toggleMoveUI(){
+  const t = $("mType").value;
+  const isMove = (t === 'MOVE');
+  $("blockNormal").style.display = isMove ? 'none' : 'grid';
+  $("blockMove").style.display = isMove ? 'grid' : 'none';
+}
+
+function upsertRecord(){
+  const dt = normalizeDateOnly($("mDT").value);
+  const type = normalize($("mType").value) || 'IN';
+  const ticket = normalize($("mTicket").value).toUpperCase();
+  const product = normalize($("mProduct").value);
+  const note = normalize($("mNote").value);
+
+  if(!dt){ showMsg('請選擇日期。','err'); return; }
+  if(!validateFullTicket(ticket)){
+    showMsg('請輸入完整編號，例如：SL066-251212。','err');
+    return;
+  }
+
+  const records = load();
+
+  let payload = {
+    dt,
+    type,
+    ticket,
+    product,
+    note,
+    updated_at: new Date().toISOString(),
+  };
+
+  if(type === 'MOVE'){
+    const from_loc = normalize($("mFrom").value);
+    const to_loc = normalize($("mTo").value);
+    const boards = normalize($("mBoardsM").value);
+    if(!from_loc || !to_loc){
+      showMsg('移位需選擇來源儲位與目的儲位。','err');
+      return;
+    }
+    if(from_loc === to_loc){
+      showMsg('移位來源與目的儲位不可相同。','err');
+      return;
+    }
+    payload = {
+      ...payload,
+      from_loc,
+      to_loc,
+      boards: boards === '' ? 0 : Number(boards),
+      boxes: null,
+      loc: null,
+    };
+  }else{
+    const loc = normalize($("mLoc").value);
+    const boards = normalize($("mBoards").value);
+    const boxes = normalize($("mBoxes").value);
+    payload = {
+      ...payload,
+      loc,
+      boards: boards === '' ? 0 : Number(boards),
+      boxes: boxes === '' ? null : Number(boxes),
+      from_loc: null,
+      to_loc: null,
+    };
+  }
+
+  if(modalMode === 'add'){
+    const rec = {
+      record_id: uuid(),
+      created_at: new Date().toISOString(),
+      ...payload,
+    };
+    records.push(rec);
+    save(records);
+    closeModal();
+    render();
+    showMsg('已新增一筆。','ok');
+    return;
+  }
+
+  if(modalMode === 'edit'){
+    const idx = records.findIndex(r=>r.record_id===editingId);
+    if(idx<0) return;
+    records[idx] = {
+      ...records[idx],
+      ...payload,
+    };
+    save(records);
+    closeModal();
+    render();
+    showMsg('已更新單筆。','ok');
+  }
+}
+
+function deleteOne(id){
+  const records = load();
+  const idx = records.findIndex(r=>r.record_id===id);
+  if(idx<0) return;
+  const r = records[idx];
+  const ok = confirm(`確定刪除？\n\n日期：${normalizeDateOnly(r.dt)}\n編號：${r.ticket}\n品名：${r.product || ''}\n\n此操作不可復原。`);
+  if(!ok) return;
+  records.splice(idx,1);
+  save(records);
+  render();
+  showMsg('已刪除單筆。','ok');
+}
+
+function matches(rec, q){
+  if(!q) return true;
+  const hay = [
+    rec.ticket, rec.product, rec.loc, rec.from_loc, rec.to_loc, rec.note, rec.dt, typeLabel(rec.type)
+  ].join(' ').toLowerCase();
+  return hay.includes(q.toLowerCase());
+}
+
+function sortRecords(records, key){
+  const copy = [...records];
+  switch(key){
+    case 'dt_asc':
+      copy.sort((a,b)=> (normalizeDateOnly(a.dt)||'').localeCompare(normalizeDateOnly(b.dt)||'') || (a.ticket||'').localeCompare(b.ticket||''));
+      break;
+    case 'ticket_asc':
+      copy.sort((a,b)=> (a.ticket||'').localeCompare(b.ticket||'') || (normalizeDateOnly(b.dt)||'').localeCompare(normalizeDateOnly(a.dt)||''));
+      break;
+    case 'product_asc':
+      copy.sort((a,b)=> (a.product||'').localeCompare(b.product||'') || (normalizeDateOnly(b.dt)||'').localeCompare(normalizeDateOnly(a.dt)||''));
+      break;
+    case 'dt_desc':
+    default:
+      copy.sort((a,b)=> (normalizeDateOnly(b.dt)||'').localeCompare(normalizeDateOnly(a.dt)||'') || (a.ticket||'').localeCompare(b.ticket||''));
+      break;
+  }
+  return copy;
+}
+
+function computeInventory(records){
+  // inv[loc][product] = {boards, boxes}
+  // drill[loc|product] = [record,...]
+  const inv = {}; // loc -> product -> agg
+  const drill = {}; // loc|product -> [record,...]
+
+  function ensure(loc, product){
+    inv[loc] = inv[loc] || {};
+    inv[loc][product] = inv[loc][product] || {boards:0, boxes:0};
+    const key = `${loc}|||${product}`;
+    drill[key] = drill[key] || [];
+    return key;
+  }
+
+  for(const r0 of records){
+    // Always operate on date-only dt to keep sorting / “latest” stable.
+    const r = {...r0, dt: normalizeDateOnly(r0.dt)};
+    const product = normalize(r.product) || '(未填品名)';
+
+    if(r.type === 'IN'){
+      const loc = normalize(r.loc) || '(未指定)';
+      const key = ensure(loc, product);
+      inv[loc][product].boards += Number(r.boards||0);
+      inv[loc][product].boxes += Number(r.boxes||0);
+      drill[key].push(r);
+      continue;
+    }
+
+    if(r.type === 'OUT'){
+      const loc = normalize(r.loc) || '(未指定)';
+      const key = ensure(loc, product);
+      inv[loc][product].boards -= Number(r.boards||0);
+      inv[loc][product].boxes -= Number(r.boxes||0);
+      drill[key].push(r);
+      continue;
+    }
+
+    if(r.type === 'ADJ'){
+      const loc = normalize(r.loc) || '(未指定)';
+      const key = ensure(loc, product);
+      inv[loc][product].boards += Number(r.boards||0);
+      inv[loc][product].boxes += Number(r.boxes||0);
+      drill[key].push(r);
+      continue;
+    }
+
+    if(r.type === 'MOVE'){
+      const from = normalize(r.from_loc) || '(未指定)';
+      const to = normalize(r.to_loc) || '(未指定)';
+      const qtyB = Number(r.boards||0);
+      const qtyX = Number(r.boxes||0);
+
+      const keyFrom = ensure(from, product);
+      inv[from][product].boards -= qtyB;
+      inv[from][product].boxes -= qtyX;
+      drill[keyFrom].push(r);
+
+      const keyTo = ensure(to, product);
+      inv[to][product].boards += qtyB;
+      inv[to][product].boxes += qtyX;
+      drill[keyTo].push(r);
+      continue;
+    }
+  }
+
+  return {inv, drill};
+}
+
+function renderKPIs(records){
+  $("kpiTotal").textContent = records.length;
+  $("kpiIn").textContent = records.filter(r=>r.type==='IN').length;
+  $("kpiOut").textContent = records.filter(r=>r.type==='OUT').length;
+  const {inv} = computeInventory(records);
+  $("kpiLoc").textContent = Object.keys(inv).length;
+}
+
+function renderFlow(records){
+  const q = normalize($("q").value);
+  const qType = normalize($("qType").value);
+  const qSort = normalize($("qSort").value) || 'dt_desc';
+
+  let filtered = records.filter(r=>matches(r,q));
+  if(qType) filtered = filtered.filter(r=>r.type===qType);
+  filtered = sortRecords(filtered, qSort);
+
+  const tb = $("tbody");
+  tb.innerHTML = '';
+
+  if(filtered.length===0){
+    tb.innerHTML = `<tr><td colspan="9" style="padding:16px;color:rgba(159,176,208,.9)">查無資料。你可用 SL066 / 品名 / A1 進行部分搜尋。</td></tr>`;
+    return;
+  }
+
+  for(const r0 of filtered){
+    const r = {...r0, dt: normalizeDateOnly(r0.dt)};
+    const locText = r.type==='MOVE' ? `${escapeHtml(r.from_loc||'')} → ${escapeHtml(r.to_loc||'')}` : escapeHtml(r.loc||'');
+    const b = (r.boards===null || r.boards===undefined) ? '—' : String(r.boards);
+    const x = (r.boxes===null || r.boxes===undefined) ? '—' : String(r.boxes);
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${escapeHtml(r.dt || '')}</td>
+      <td><span class="${typeBadgeClass(r.type)}">${escapeHtml(typeLabel(r.type))}</span></td>
+      <td><span class="mono">${escapeHtml(r.ticket || '')}</span></td>
+      <td>${escapeHtml(r.product || '')}</td>
+      <td>${locText || '<span style="color:rgba(159,176,208,.85)">—</span>'}</td>
+      <td>${escapeHtml(b)}</td>
+      <td>${escapeHtml(x)}</td>
+      <td>${escapeHtml(r.note || '')}</td>
+      <td>
+        <div class="split">
+          <button class="btn-mini gray" data-act="edit" data-id="${r.record_id}">編輯</button>
+          <button class="btn-mini red" data-act="del" data-id="${r.record_id}">刪除</button>
+        </div>
+      </td>
+    `;
+    tb.appendChild(tr);
+  }
+}
+
+function locSortKey(loc){
+  const s = (loc||'').toUpperCase().trim();
+  const m = s.match(/^([AB])([0-9]{1,3})$/);
+  if(!m) return {zone: 9, num: 999, raw: s};
+  const zone = (m[1]==='A') ? 0 : 1;
+  const num = parseInt(m[2],10);
+  return {zone, num, raw: s};
+}
+
+function renderInventory(records){
+  const locFilter = normalize($("invLoc").value).toUpperCase();
+  const mode = normalize($("invMode").value) || 'nz';
+  const unit = normalize($("invUnit").value) || 'both';
+
+  const computed = computeInventory(records);
+  lastComputedInventory = computed;
+
+  const inv = computed.inv;
+  const locs = Object.keys(inv)
+    .filter(loc => !locFilter || loc.toUpperCase() === locFilter)
+    .sort((a,b)=>{
+      const ka = locSortKey(a), kb = locSortKey(b);
+      if(ka.zone !== kb.zone) return ka.zone - kb.zone;
+      if(ka.num !== kb.num) return ka.num - kb.num;
+      return ka.raw.localeCompare(kb.raw);
+    });
+
+  const container = $("invContainer");
+  container.innerHTML = '';
+
+  if(locs.length===0){
+    container.innerHTML = `<div class="tblwrap"><div style="padding:16px;color:rgba(159,176,208,.9)">目前無符合條件的盤點結果。你可以輸入儲位（例如 A1），或切換顯示方式。</div></div>`;
+    return;
+  }
+
+  for(const loc of locs){
+    const products = Object.keys(inv[loc] || {}).sort((a,b)=>a.localeCompare(b));
+
+    const rows = [];
+    let totalBoards = 0;
+    let totalBoxes = 0;
+
+    for(const product of products){
+      const agg = inv[loc][product];
+      const boards = agg.boards || 0;
+      const boxes = agg.boxes || 0;
+
+      totalBoards += boards;
+      totalBoxes += boxes;
+
+      if(mode === 'nz'){
+        const nz = (unit === 'boards') ? (boards !== 0)
+                 : (unit === 'boxes') ? (boxes !== 0)
+                 : (boards !== 0 || boxes !== 0);
+        if(!nz) continue;
+      }
+      rows.push({loc, product, boards, boxes});
+    }
+
+    if(rows.length===0 && mode==='nz') continue;
+
+    const block = document.createElement('div');
+    block.className = 'card';
+    block.style.boxShadow = 'none';
+    block.style.borderRadius = '14px';
+    block.style.marginBottom = '10px';
+
+    const header = document.createElement('div');
+    header.className = 'card-hd';
+    header.style.borderBottom = '1px solid rgba(255,255,255,.08)';
+    header.style.cursor = 'pointer';
+    header.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span class="badge info">${escapeHtml(loc)}</span>
+        <span style="font-size:12px;color:rgba(159,176,208,.95);font-weight:900;">品項 ${rows.length}</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+        <span class="badge" title="此儲位合計（盤點結果）">板 ${escapeHtml(unit==='boxes'?'—':String(totalBoards))} ｜ 箱 ${escapeHtml(unit==='boards'?'—':String(totalBoxes))}</span>
+        <span class="invToggleText" style="color:rgba(159,176,208,.9);font-size:12px;">點擊展開</span>
+      </div>
+    `;
+
+    const body = document.createElement('div');
+    body.className = 'card-bd';
+    body.style.display = 'none';
+
+    const tableWrap = document.createElement('div');
+    tableWrap.className = 'tblwrap';
+    tableWrap.style.maxHeight = '420px';
+
+    const table = document.createElement('table');
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th style="width:180px;">編號（最新）</th>
+          <th style="width:160px;">日期（最新）</th>
+          <th>品名</th>
+          <th style="width:110px;">板</th>
+          <th style="width:110px;">箱</th>
+          <th style="width:180px;">修改</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(r=>{
+          const boardsText = unit==='boxes' ? '—' : String(r.boards);
+          const boxesText  = unit==='boards' ? '—' : String(r.boxes);
+          const key = `${r.loc}|||${r.product}`;
+          const list = (lastComputedInventory && lastComputedInventory.drill && lastComputedInventory.drill[key]) ? lastComputedInventory.drill[key] : [];
+
+          let latestDt = '';
+          let latestTicket = '';
+          if(list.length){
+            let best = list[0];
+            for(const it of list){
+              const a = normalizeDateOnly(it.dt||'');
+              const b = normalizeDateOnly(best.dt||'');
+              if(a > b) best = it;
+            }
+            latestDt = normalizeDateOnly(best.dt || '');
+            latestTicket = best.ticket || '';
+          }
+
+          return `
+            <tr>
+              <td><span class="mono">${escapeHtml(latestTicket || '—')}</span></td>
+              <td>${escapeHtml(latestDt || '—')}</td>
+              <td>${escapeHtml(r.product)}</td>
+              <td>${escapeHtml(boardsText)}</td>
+              <td>${escapeHtml(boxesText)}</td>
+              <td><button class="btn-mini blue" data-act="editgroup" data-loc="${escapeHtml(r.loc)}" data-product="${escapeHtml(r.product)}">修改</button></td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    `;
+
+    tableWrap.appendChild(table);
+    body.appendChild(tableWrap);
+
+    header.addEventListener('click', (ev)=>{
+      if(ev.target && ev.target.closest('button')) return;
+      const open = body.style.display !== 'none';
+      body.style.display = open ? 'none' : 'block';
+      const t = header.querySelector('.invToggleText');
+      if(t) t.textContent = open ? '點擊展開' : '點擊收合';
+    });
+
+    block.appendChild(header);
+    block.appendChild(body);
+    container.appendChild(block);
+  }
+
+  if(container.children.length===0){
+    container.innerHTML = `<div class="tblwrap"><div style="padding:16px;color:rgba(159,176,208,.9)">目前無符合條件的盤點結果（可能因為設定為「只顯示有庫存」）。可改為顯示全部，或清除儲位篩選。</div></div>`;
+  }
+}
+
+function openDrill(loc, product){
+  const key = `${loc}|||${product}`;
+  const list = (lastComputedInventory && lastComputedInventory.drill && lastComputedInventory.drill[key]) ? lastComputedInventory.drill[key] : [];
+
+  $("drillTitle").textContent = `修改清單｜${loc}｜${product}`;
+  const tb = $("drillBody");
+  tb.innerHTML = '';
+
+  if(list.length===0){
+    tb.innerHTML = `<tr><td colspan="9" style="padding:16px;color:rgba(159,176,208,.9)">查無明細。</td></tr>`;
+    $("drill").classList.add('show');
+    return;
+  }
+
+  const sorted = sortRecords(list, 'dt_desc');
+  for(const r0 of sorted){
+    const r = {...r0, dt: normalizeDateOnly(r0.dt)};
+    const locText = r.type==='MOVE'
+      ? `${escapeHtml(r.from_loc||'')} → ${escapeHtml(r.to_loc||'')}`
+      : escapeHtml(r.loc||'');
+
+    const b = (r.boards===null || r.boards===undefined) ? '—' : String(r.boards);
+    const x = (r.boxes===null || r.boxes===undefined) ? '—' : String(r.boxes);
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${escapeHtml(r.dt || '')}</td>
+      <td><span class="mono">${escapeHtml(r.ticket || '')}</span></td>
+      <td>${escapeHtml(r.product || '')}</td>
+      <td><span class="${typeBadgeClass(r.type)}">${escapeHtml(typeLabel(r.type))}</span></td>
+      <td>${locText}</td>
+      <td>${escapeHtml(b)}</td>
+      <td>${escapeHtml(x)}</td>
+      <td>${escapeHtml(r.note || '')}</td>
+      <td><button class="btn-mini gray" data-act="edit" data-id="${escapeHtml(r.record_id)}">更改</button></td>
+    `;
+    tb.appendChild(tr);
+  }
+
+  $("drill").classList.add('show');
+}
+
+function render(){
+  const records = load();
+  renderKPIs(records);
+  if(view === 'flow') renderFlow(records);
+  else renderInventory(records);
+}
+
+function handleFlowClick(e){
+  const btn = e.target.closest('button[data-act]');
+  if(!btn) return;
+  const act = btn.getAttribute('data-act');
+  const id = btn.getAttribute('data-id');
+  if(act==='edit') return openEdit(id);
+  if(act==='del') return deleteOne(id);
+}
+
+function handleInvClick(e){
+  const btn = e.target.closest('button[data-act="editgroup"]');
+  if(!btn) return;
+  const loc = btn.getAttribute('data-loc');
+  const product = btn.getAttribute('data-product');
+
+  // 若此儲位＋品名僅 1 筆原始紀錄，直接進編輯（少一次點擊）
+  const key = `${loc}|||${product}`;
+  const list = (lastComputedInventory && lastComputedInventory.drill && lastComputedInventory.drill[key]) ? lastComputedInventory.drill[key] : [];
+  if(list.length === 1){
+    openEdit(list[0].record_id);
+    return;
+  }
+
+  // 多筆時，進修改清單
+  openDrill(loc, product);
+}
+
+
+// ---------- Import / Export ----------
+function exportJSON(){
+  const records = load();
+  const blob = new Blob([JSON.stringify(records, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `warehouse_export_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function sanitizeImportedRow(x){
+  const record_id = x.record_id || x.id || uuid();
+
+  let dt = normalizeDateOnly(x.dt);
+  if(!dt){
+    const inbound = normalizeDateOnly(x.inbound);
+    if(inbound) dt = inbound;
+  }
+  if(!dt) dt = nowLocalDT();
+
+  let type = normalize(x.type).toUpperCase();
+  if(!type) type = 'IN';
+  if(!['IN','OUT','MOVE','ADJ'].includes(type)) type = 'IN';
+
+  const ticket = normalize(x.ticket || x.sku).toUpperCase();
+  const product = normalize(x.product || x.name);
+  const note = normalize(x.note);
+
+  const boardsRaw = (x.boards ?? x.pallets);
+  const boxesRaw = (x.boxes ?? x.qty);
+  const boards = (boardsRaw === null || boardsRaw === undefined || boardsRaw === '') ? 0 : Number(boardsRaw);
+  const boxes = (boxesRaw === null || boxesRaw === undefined || boxesRaw === '') ? 0 : Number(boxesRaw);
+
+  const loc = normalize(x.loc || x.location);
+  const from_loc = normalize(x.from_loc || x.from);
+  const to_loc = normalize(x.to_loc || x.to);
+
+  let finalType = type;
+  let finalLoc = loc;
+  let finalFrom = from_loc;
+  let finalTo = to_loc;
+
+  if(finalType === 'MOVE' && (!finalFrom || !finalTo)){
+    finalType = 'IN';
+    finalLoc = loc || '(未指定)';
+    finalFrom = null;
+    finalTo = null;
+  }
+
+  if(finalType !== 'MOVE' && !finalLoc) finalLoc = '(未指定)';
+
+  return {
+    record_id,
+    dt,
+    type: finalType,
+    ticket: ticket || '',
+    product: product || '',
+    loc: finalType==='MOVE' ? null : finalLoc,
+    from_loc: finalType==='MOVE' ? finalFrom : null,
+    to_loc: finalType==='MOVE' ? finalTo : null,
+    boards: Number.isFinite(boards) ? boards : 0,
+    boxes: Number.isFinite(boxes) ? boxes : 0,
+    note,
+    created_at: x.created_at || x.createdAt || new Date().toISOString(),
+    updated_at: x.updated_at || x.updatedAt || new Date().toISOString(),
+  };
+}
+
+function importJSON(){
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'application/json';
+  inp.addEventListener('change', async ()=>{
+    if(!inp.files || !inp.files[0]) return;
+    const text = await inp.files[0].text();
+    try{
+      const parsed = JSON.parse(text);
+      const data = Array.isArray(parsed)
+        ? parsed
+        : (parsed && Array.isArray(parsed.items) ? parsed.items : null);
+      if(!data) throw new Error('格式錯誤：需為陣列，或為 { items: [...] }');
+
+      const current = load();
+      const ids = new Set(current.map(r=>r.record_id));
+      const sanitized = data.map(sanitizeImportedRow);
+
+      let added = 0;
+      const merged = [...current];
+      for(const r of sanitized){
+        if(!ids.has(r.record_id)){
+          merged.push(r);
+          added += 1;
+        }
+      }
+
+      save(merged);
+      render();
+      showMsg(`匯入完成：新增 ${added} 筆（不依單號合併）。`, 'ok');
+    }catch(e){
+      showMsg('匯入失敗：' + (e.message || '未知錯誤'), 'err');
+    }
+  });
+  inp.click();
+}
+
+function wipeAll(){
+  const ok = confirm('確定清除全部資料？此操作不可復原。');
+  if(!ok) return;
+  localStorage.removeItem(STORE_KEY);
+  render();
+  showMsg('已清除全部資料。', 'ok');
+}
+
+// ---------- Lightweight tests ----------
+function assert(name, cond){
+  if(!cond){
+    console.error(`[TEST FAIL] ${name}`);
+    return false;
+  }
+  console.log(`[TEST PASS] ${name}`);
+  return true;
+}
+
+function runTests(){
+  // validateFullTicket
+  assert('validateFullTicket accepts SL066-251212', validateFullTicket('SL066-251212')===true);
+  assert('validateFullTicket rejects missing dash', validateFullTicket('SL066251212')===false);
+  assert('validateFullTicket rejects short suffix', validateFullTicket('SL066-2512')===false);
+
+  // normalizeDateOnly
+  assert('normalizeDateOnly strips time', normalizeDateOnly('2026-01-01T10:00')==='2026-01-01');
+  assert('normalizeDateOnly supports slash', normalizeDateOnly('2026/01/02')==='2026-01-02');
+
+  // sanitizeImportedRow
+  const r1 = sanitizeImportedRow({ticket:'sl001-250101', product:'測試', loc:'A1', boards:2, boxes:10, type:'IN', dt:'2026-01-01T10:00'});
+  assert('sanitizeImportedRow keeps IN loc', r1.type==='IN' && r1.loc==='A1');
+  assert('sanitizeImportedRow stores date-only', r1.dt==='2026-01-01');
+
+  const r2 = sanitizeImportedRow({type:'MOVE', from:'A1', to:'B2', ticket:'sl002-250101', name:'搬移', pallets:1, dt:'2026-01-01T11:00'});
+  assert('sanitizeImportedRow maps MOVE from/to', r2.type==='MOVE' && r2.from_loc==='A1' && r2.to_loc==='B2');
+
+  const r3 = sanitizeImportedRow({type:'MOVE', ticket:'sl003-250101', name:'不完整MOVE'});
+  assert('sanitizeImportedRow downgrades incomplete MOVE to IN', r3.type==='IN');
+
+  // locSortKey ordering
+  const a2 = locSortKey('A2');
+  const b1 = locSortKey('B1');
+  assert('locSortKey A before B', a2.zone < b1.zone);
+}
+
+// ---------- Init ----------
+function init(){
+  fillLocOptgroups(['ogA','ogB'], ['ogA2','ogB2'], ['ogA3','ogB3']);
+
+  // Bind UI (safe)
+  safeBind('btnOpenAdd','click', openAdd);
+  safeBind('btnClose','click', closeModal);
+  safeBind('btnSave','click', upsertRecord);
+  safeBind('mType','change', toggleMoveUI);
+
+  safeBind('tabFlow','click', ()=>switchView('flow'));
+  safeBind('tabInv','click', ()=>switchView('inv'));
+
+  safeBind('q','input', render);
+  safeBind('qType','change', render);
+  safeBind('qSort','change', render);
+
+  safeBind('invLoc','input', render);
+  safeBind('invMode','change', render);
+  safeBind('invUnit','change', render);
+
+  safeBind('btnExport','click', exportJSON);
+  safeBind('btnImport','click', importJSON);
+  safeBind('btnWipe','click', wipeAll);
+
+  safeBind('tbody','click', handleFlowClick);
+
+  // Inventory drill buttons live inside #invContainer (generated). Delegate click from invContainer.
+  safeBind('invContainer','click', handleInvClick);
+
+  // Drill modal
+  safeBind('btnDrillClose','click', ()=>$("drill").classList.remove('show'));
+  safeBind('drillBody','click', (ev)=>{
+    const btn = ev.target.closest('button[data-act="edit"]');
+    if(!btn) return;
+    const id = btn.getAttribute('data-id');
+    $("drill").classList.remove('show');
+    openEdit(id);
+  });
+  safeBind('drill','click', (ev)=>{ if(ev.target === $("drill")) $("drill").classList.remove('show'); });
+
+  // Modal close on backdrop
+  safeBind('modal','click', (ev)=>{ if(ev.target === $("modal")) closeModal(); });
+  document.addEventListener('keydown', (ev)=>{ if(ev.key === 'Escape'){ closeModal(); $("drill").classList.remove('show'); } });
+
+  runTests();
+
+  switchView('flow');
+  render();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(()=>{});
+  });
+}
+</script>
+
+</body>
+</html>
